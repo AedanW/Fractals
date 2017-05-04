@@ -10,6 +10,7 @@ import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -19,6 +20,10 @@ import java.awt.Color;
 import javax.swing.JSpinner;
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
+import java.awt.SystemColor;
+import java.awt.Canvas;
+import javax.swing.ImageIcon;
+import java.awt.Toolkit;
 
 public class GUI extends JFrame {
 
@@ -31,6 +36,9 @@ public class GUI extends JFrame {
     private JRadioButton radGenerateJuliaSet;
     private JTextField JuliaSetValueTextField;
     private JButton btnGenerate;
+    private JTextField textField_5;
+    boolean generateMandelbrot = false;
+    boolean generateJulia = false;
 
     /**
      * Launch the application.
@@ -53,10 +61,12 @@ public class GUI extends JFrame {
      */
     public GUI() 
     {
+    	setIconImage(Toolkit.getDefaultToolkit().getImage("Z:\\Desktop\\mandelbrot.jpg"));
         setTitle("Fractals");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 1000, 600);
         contentPane = new JPanel();
+        contentPane.setBackground(SystemColor.inactiveCaption);
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
         contentPane.setLayout(null);
@@ -97,19 +107,23 @@ public class GUI extends JFrame {
         textField_3.setBounds(888, 86, 86, 20);
         contentPane.add(textField_3);
         
-        JMenuItem mntmNewMenuItem = new JMenuItem("AED\u00C0N");
-        mntmNewMenuItem.setBackground(Color.PINK);
-        mntmNewMenuItem.setBounds(149, 135, 94, 94);
-        contentPane.add(mntmNewMenuItem);
-        
         radGenerateMandelbrotSet = new JRadioButton("Generate Mandelbrot set");
+        radGenerateMandelbrotSet.setBackground(SystemColor.inactiveCaption);
         radGenerateMandelbrotSet.setBounds(794, 111, 180, 23);
+        radGenerateMandelbrotSet.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){
+        	radGenerateJuliaSet.setSelected(false);
+        	refresh();
+        }});
         contentPane.add(radGenerateMandelbrotSet);
         
         radGenerateJuliaSet = new JRadioButton("Generate Julia set");
+        radGenerateJuliaSet.setBackground(SystemColor.inactiveCaption);
         radGenerateJuliaSet.setBounds(794, 138, 180, 23);
         contentPane.add(radGenerateJuliaSet);
-        
+        radGenerateJuliaSet.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){
+        	radGenerateMandelbrotSet.setSelected(false);
+        	refresh();
+        }});
         JuliaSetValueTextField = new JTextField();
         JuliaSetValueTextField.setEditable(false);
         JuliaSetValueTextField.setBounds(888, 168, 86, 20);
@@ -124,10 +138,24 @@ public class GUI extends JFrame {
         btnGenerate.setBounds(845, 516, 89, 23);
         contentPane.add(btnGenerate);
         
+        textField_5 = new JTextField();
+        textField_5.setBounds(888, 199, 86, 20);
+        contentPane.add(textField_5);
+        textField_5.setColumns(10);
+        
+        JLabel lblNewLabel_2 = new JLabel("Max Iterations:");
+        lblNewLabel_2.setBounds(790, 202, 84, 14);
+        contentPane.add(lblNewLabel_2);
+        
+        JLabel lblNewLabel_3 = new JLabel("");
+        lblNewLabel_3.setIcon(new ImageIcon("Z:\\Desktop\\Mandel_zoom_08_satellite_antenna.jpg"));
+        lblNewLabel_3.setBounds(48, 11, 717, 540);
+        contentPane.add(lblNewLabel_3);
+        
         refresh();
     }
     
-        
+
     
     public void refresh()
     {
@@ -138,6 +166,7 @@ public class GUI extends JFrame {
         else
         {
             JuliaSetValueTextField.setEditable(false);
+            JuliaSetValueTextField.setText("");
         }
     }
 }
