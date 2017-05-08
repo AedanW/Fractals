@@ -5,7 +5,7 @@ public abstract class FractalGenerator
     // did you git this?
 	// I got it
     
-    protected static final int MAX_ITERATIONS = 2000000;
+    protected static final int MAX_ITERATIONS = 20000;
     
     public static Point[][] generateMandelBrotSet(int maxX, int minX, int maxY, int minY, float xRes, float yRes)
     {
