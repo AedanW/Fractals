@@ -5,11 +5,14 @@ import java.awt.Graphics;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
+
+
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -44,11 +47,19 @@ public class GUI extends JFrame {
     private float maxY;
     private float xRes;
     private float yRes;
+    private float maxIterations;
+    final int FRAMES_PER_SECOND = 60;
+    long current_time = 0;                              //MILLISECONDS
+    long next_refresh_time = 0;                         //MILLISECONDS
+    long minimum_delta_time = 1000 / FRAMES_PER_SECOND; //MILLISECONDS
+    long actual_delta_time = 0;                         //MILLISECONDS
     boolean generateMandelbrot = false;
     boolean generateJulia = false;
     Color[] colourList = new Color[]{Color.RED,Color.ORANGE,Color.YELLOW,Color.GREEN,Color.CYAN,Color.BLUE,Color.MAGENTA,Color.PINK,new Color(112,39,195)};
     private JTextField txtXResolution;
     private JTextField txtYResolution;
+    
+    Point[][] desiredSet = null;
 
     /**
      * Launch the application.
@@ -75,7 +86,7 @@ public class GUI extends JFrame {
         setTitle("Fractals");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 1000, 600);
-        contentPane = new JPanel();
+        contentPane = new DrawPanel();
         contentPane.setBackground(SystemColor.inactiveCaption);
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
@@ -122,7 +133,7 @@ public class GUI extends JFrame {
         radGenerateMandelbrotSet.setBounds(794, 161, 180, 23);
         radGenerateMandelbrotSet.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){
         	radGenerateJuliaSet.setSelected(false);
-        	refresh();
+        	ourRefresh();
         }});
         contentPane.add(radGenerateMandelbrotSet);
         
@@ -132,7 +143,7 @@ public class GUI extends JFrame {
         contentPane.add(radGenerateJuliaSet);
         radGenerateJuliaSet.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){
         	radGenerateMandelbrotSet.setSelected(false);
-        	refresh();
+        	ourRefresh();
         }});
         txtJuliaSetValue = new JTextField();
         txtJuliaSetValue.setEditable(false);
@@ -145,6 +156,12 @@ public class GUI extends JFrame {
         contentPane.add(lblJuliaSetValue);
         
         btnGenerate = new JButton("Generate");
+        btnGenerate.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                do_btnGenerate_mouseClicked(e);
+            }
+        });
         btnGenerate.setBounds(845, 516, 89, 23);
         contentPane.add(btnGenerate);
         
@@ -164,11 +181,11 @@ public class GUI extends JFrame {
         contentPane.add(Canvas);
         
         JLabel lblXRes = new JLabel("X Resolution");
-        lblXRes.setBounds(818, 115, 70, 14);
+        lblXRes.setBounds(814, 115, 83, 14);
         contentPane.add(lblXRes);
         
         JLabel lblYRes = new JLabel("Y Resolution");
-        lblYRes.setBounds(818, 140, 70, 14);
+        lblYRes.setBounds(814, 140, 70, 14);
         contentPane.add(lblYRes);
         
         txtXResolution = new JTextField();
@@ -181,18 +198,28 @@ public class GUI extends JFrame {
         txtYResolution.setBounds(888, 136, 86, 20);
         contentPane.add(txtYResolution);
         
-        refresh();    
+//        btnGenerate.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){
+//        }});
+//        
+        ourRefresh(); 
+        run();
     }
+    
+    
     
     class DrawPanel extends JPanel
     {
-            public void paintComponent(Graphics g, Point[][] desiredSet)
+            public void paintComponent(Graphics g)
             {
                 if (g == null) 
                 {
                     return;
                 }
-                
+             
+                if (desiredSet == null) {
+                    return;
+                }
+                    
                 this.resize(this.getParent().getWidth() - 8, this.getParent().getHeight() - 8);
                 double cell_width = (double)this.getWidth() / (desiredSet.length);
                 double cell_height = (double)(this.getHeight()) / (desiredSet[0].length);
@@ -219,15 +246,65 @@ public class GUI extends JFrame {
                         g.fillRect((int)(x * cell_width),(int)(y * cell_height + 400), (int)(cell_width) + 1, (int)(cell_height) + 1);                                
                     }
                 }
-                refresh();
+                
+                desiredSet = null;
+                ourRefresh();
             }
     }
 
+    public void run()
+    {
+        Thread loop = new Thread()
+        {
+           public void run()
+           {
+              gameLoop();
+           }
+        };
+        loop.start();
+        
+    }
     
-    public void refresh()
+    private void gameLoop() {
+
+        while (true) { // main game loop
+            
+            //HANDLE EVENTS
+
+            //UPDATE STATE
+            updateTime();
+
+            //REFRESH
+            this.repaint();
+            ourRefresh();
+
+            //adapted from http://www.java-gaming.org/index.php?topic=24220.0
+            next_refresh_time = current_time + minimum_delta_time;
+            while (current_time < next_refresh_time)
+            {
+               Thread.yield();
+            
+               //This stops the app from consuming all your CPU. It makes this slightly less accurate, but is worth it.
+               //You can remove this line and it will still work (better), your CPU just climbs on certain OSes.
+               //FYI on some OS's this can cause pretty bad stuttering. Scroll down and have a look at different peoples' solutions to this.
+               try {Thread.sleep(1);} catch(Exception e) {} 
+            
+               current_time = System.currentTimeMillis();
+            }
+        }
+    }
+    
+    private void updateTime() {
+
+        long previous_time = 0;
+        
+        previous_time = current_time;
+        actual_delta_time = minimum_delta_time;
+    }
+    
+    public void ourRefresh()
     {
         boolean everythingFilled = true;
-        btnGenerate.setEnabled(false);
         if (radGenerateJuliaSet.isSelected() == true)
         {
             txtJuliaSetValue.setEditable(true);
@@ -287,6 +364,39 @@ public class GUI extends JFrame {
         {
             everythingFilled = false;
         }
+        if (radGenerateMandelbrotSet.isSelected() || radGenerateJuliaSet.isSelected())
+        {
+            
+        }
+        else
+        {
+            everythingFilled = false;
+        }
+        if (radGenerateJuliaSet.isSelected() && txtJuliaSetValue.getText().equals(""))
+        {
+            everythingFilled = false;
+        }
+        if (txtMaxIterations.getText().equals("") == false)
+        {
+            maxIterations = Float.parseFloat(txtMaxIterations.getText());
+        }
+        else
+        {
+            everythingFilled = false;
+        }
         btnGenerate.setEnabled(everythingFilled);
+    }
+    
+    protected void do_btnGenerate_mouseClicked(MouseEvent e) {
+
+      Container cp = getContentPane();
+      DrawPanel panel = new DrawPanel();
+      getContentPane().add(panel, BorderLayout.CENTER);
+      getContentPane().setLayout(null);
+      desiredSet = FractalGenerator.generateMandelBrotSet(2, -2, 2, -2, 2, 2);
+//      panel.paintComponent(sunGraphics2D,desiredSet);
+      this.ourRefresh();
+      this.repaint();
+        
     }
 }
