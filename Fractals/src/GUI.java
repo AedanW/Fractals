@@ -41,13 +41,13 @@ public class GUI extends JFrame {
     private JTextField txtJuliaSetValue;
     private JButton btnGenerate;
     private JTextField txtMaxIterations;
-    private float minX;
-    private float maxX;
-    private float minY;
-    private float maxY;
-    private float xRes;
-    private float yRes;
-    private float maxIterations;
+    private double minX;
+    private double maxX;
+    private double minY;
+    private double maxY;
+    private double xRes;
+    private double yRes;
+    private double maxIterations;
     final int FRAMES_PER_SECOND = 60;
     long current_time = 0;                              //MILLISECONDS
     long next_refresh_time = 0;                         //MILLISECONDS
@@ -174,12 +174,6 @@ public class GUI extends JFrame {
         lblMaxIterations.setBounds(790, 252, 84, 14);
         contentPane.add(lblMaxIterations);
         
-        Canvas Canvas = new Canvas();
-        Canvas.setFont(new Font("Webdings", Font.PLAIN, 12));
-        Canvas.setBackground(Color.WHITE);
-        Canvas.setBounds(-146, 40, 755, 528);
-        contentPane.add(Canvas);
-        
         JLabel lblXRes = new JLabel("X Resolution");
         lblXRes.setBounds(814, 115, 83, 14);
         contentPane.add(lblXRes);
@@ -221,14 +215,14 @@ public class GUI extends JFrame {
                 }
                     
                 this.resize(this.getParent().getWidth() - 8, this.getParent().getHeight() - 8);
-                double cell_width = (double)this.getWidth() / (desiredSet.length);
+                double cell_width = ((double)this.getWidth() - 200)/ (desiredSet.length);
                 double cell_height = (double)(this.getHeight()) / (desiredSet[0].length);
                 
                 System.out.println("parent width = " + this.getParent().getWidth());
                 System.out.println("DrawPanel width = " + this.getWidth());
                 
                 //BS way of clearing out the old rectangle to save CPU.
-                g.setColor(getBackground());
+                //g.setColor(getBackground());
 
                 for (int y = 0; y < desiredSet[0].length; y++)
                 {
@@ -243,11 +237,13 @@ public class GUI extends JFrame {
                             int colourIndex = desiredSet[x][y].iterations % colourList.length;
                             g.setColor(colourList[colourIndex]);
                         }
-                        g.fillRect((int)(x * cell_width),(int)(y * cell_height + 400), (int)(cell_width) + 1, (int)(cell_height) + 1);                                
+                        
+                        //g.setColor(new Color( x * 50, y * 50, 0));
+                        g.fillRect((int)(x * cell_width),(int)(y * cell_height + 8), (int)(cell_width) + 1, (int)(cell_height) + 1);                                
                     }
                 }
                 
-                desiredSet = null;
+                //desiredSet = null;
                 ourRefresh();
             }
     }
@@ -318,7 +314,7 @@ public class GUI extends JFrame {
         
         if (txtXMinimum.getText().equals("") == false)
         {
-            minX = Float.parseFloat(txtXMinimum.getText());
+            minX = Double.parseDouble(txtXMinimum.getText());
         }
         else
         {
@@ -326,7 +322,7 @@ public class GUI extends JFrame {
         }
         if (txtXMaximum.getText().equals("") == false)
         {
-            maxX = Float.parseFloat(txtXMaximum.getText());
+            maxX = Double.parseDouble(txtXMaximum.getText());
         }
         else
         {
@@ -334,7 +330,7 @@ public class GUI extends JFrame {
         }
         if (txtYMinimum.getText().equals("") == false)
         {
-            minY = Float.parseFloat(txtYMinimum.getText());
+            minY = Double.parseDouble(txtYMinimum.getText());
         }
         else
         {
@@ -342,7 +338,7 @@ public class GUI extends JFrame {
         }
         if (txtYMaximum.getText().equals("") == false)
         {
-            maxY = Float.parseFloat(txtYMaximum.getText());
+            maxY = Double.parseDouble(txtYMaximum.getText());
         }
         else
         {
@@ -350,7 +346,7 @@ public class GUI extends JFrame {
         }
         if (txtXResolution.getText().equals("") == false)
         {
-            xRes = Float.parseFloat(txtXResolution.getText());
+            xRes = Double.parseDouble(txtXResolution.getText());
         }
         else
         {
@@ -358,7 +354,7 @@ public class GUI extends JFrame {
         }
         if (txtYResolution.getText().equals("") == false)
         {
-            yRes = Float.parseFloat(txtYResolution.getText());
+            yRes = Double.parseDouble(txtYResolution.getText());
         }
         else
         {
@@ -378,7 +374,7 @@ public class GUI extends JFrame {
         }
         if (txtMaxIterations.getText().equals("") == false)
         {
-            maxIterations = Float.parseFloat(txtMaxIterations.getText());
+            maxIterations = Double.parseDouble(txtMaxIterations.getText());
         }
         else
         {
@@ -393,8 +389,7 @@ public class GUI extends JFrame {
       DrawPanel panel = new DrawPanel();
       getContentPane().add(panel, BorderLayout.CENTER);
       getContentPane().setLayout(null);
-      desiredSet = FractalGenerator.generateMandelBrotSet(2, -2, 2, -2, 2, 2);
-//      panel.paintComponent(sunGraphics2D,desiredSet);
+      desiredSet = FractalGenerator.generateMandelBrotSet(10, -10, 10, -10, 0.1, 0.1);
       this.ourRefresh();
       this.repaint();
         

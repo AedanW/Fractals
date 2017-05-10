@@ -1,11 +1,11 @@
 
 public class Point 
 {
-    protected float xCoordinate;
-    protected float yCoordinate;
+    protected double xCoordinate;
+    protected double yCoordinate;
     protected int iterations;
     
-    public Point(float xCoord, float yCoord, int iterationsA)
+    public Point(double xCoord, double yCoord, int iterationsA)
     {
         xCoordinate = xCoord;
         yCoordinate = yCoord;

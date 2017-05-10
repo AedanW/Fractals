@@ -7,12 +7,12 @@ public abstract class FractalGenerator
     
     protected static final int MAX_ITERATIONS = 20000;
     
-    public static Point[][] generateMandelBrotSet(int maxX, int minX, int maxY, int minY, float xRes, float yRes)
+    public static Point[][] generateMandelBrotSet(int maxX, int minX, int maxY, int minY, double xRes, double yRes)
     {
         Point[][] fractal =  new Point[(int)(1+((maxY-minY) / yRes))][(int)(1+((maxX-minX) / xRes))];
-        float x = minX;
-        float y = minY;
-        float originalY = y;
+        double x = minX;
+        double y = minY;
+        double originalY = y;
         Complex z = new Complex(0,0);
         int row = 0;
         int col = 0;
