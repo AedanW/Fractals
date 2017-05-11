@@ -5,14 +5,17 @@ public abstract class FractalGenerator
     // did you git this?
 	// I got it
     
-    protected static final int MAX_ITERATIONS = 20000;
+    protected static int maxIterations = 2000;
+    protected static long progress = 0;
     
-    public static Point[][] generateMandelBrotSet(int maxX, int minX, int maxY, int minY, double xRes, double yRes)
+    public static Point[][] generateMandelBrotSet(double maxX, double minX, double maxY, double minY, double xRes, double yRes, int maxIterationsi)
     {
+        maxIterations = maxIterationsi;
         Point[][] fractal =  new Point[(int)(1+((maxY-minY) / yRes))][(int)(1+((maxX-minX) / xRes))];
         double x = minX;
         double y = minY;
         double originalY = y;
+        progress = 1;
         Complex z = new Complex(0,0);
         int row = 0;
         int col = 0;
@@ -23,7 +26,7 @@ public abstract class FractalGenerator
                 int iterations = 0;
                 Complex current = new Complex(x,y);
                 //Determine whether or not current is in the Mandelbrot set
-                while ((MAX_ITERATIONS > iterations) && (2.0 > z.abs()))
+                while ((maxIterations > iterations) && (2.0 > z.abs()))
                 {
                     Complex zSquared = z.times(z);
                     Complex newZValue = zSquared.plus(current);
@@ -34,6 +37,8 @@ public abstract class FractalGenerator
                 y = y + yRes;
                 row++;
                 z = new Complex(0,0);
+                progress++;
+                System.out.println((progress*100/ ((int)(1+((maxY-minY) / yRes)) * (int)(1+((maxX-minX) / xRes)))));
             }
             x = x + xRes;
             col++;

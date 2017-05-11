@@ -47,8 +47,8 @@ public class GUI extends JFrame {
     private double maxY;
     private double xRes;
     private double yRes;
-    private double maxIterations;
-    final int FRAMES_PER_SECOND = 60;
+    private int maxIterations;
+    final int FRAMES_PER_SECOND = 30;
     long current_time = 0;                              //MILLISECONDS
     long next_refresh_time = 0;                         //MILLISECONDS
     long minimum_delta_time = 1000 / FRAMES_PER_SECOND; //MILLISECONDS
@@ -228,22 +228,18 @@ public class GUI extends JFrame {
                 {
                     for (int x = 0; x < desiredSet.length; x++)
                     {
-                        if (desiredSet[x][y].iterations == FractalGenerator.MAX_ITERATIONS)
+                        if (desiredSet[y][x].iterations == FractalGenerator.maxIterations)
                         {
                             g.setColor(Color.BLACK);
                         }
                         else
                         {
-                            int colourIndex = desiredSet[x][y].iterations % colourList.length;
+                            int colourIndex = desiredSet[y][x].iterations % colourList.length;
                             g.setColor(colourList[colourIndex]);
                         }
-                        
-                        //g.setColor(new Color( x * 50, y * 50, 0));
                         g.fillRect((int)(x * cell_width),(int)(y * cell_height + 8), (int)(cell_width) + 1, (int)(cell_height) + 1);                                
                     }
                 }
-                
-                //desiredSet = null;
                 ourRefresh();
             }
     }
@@ -374,7 +370,7 @@ public class GUI extends JFrame {
         }
         if (txtMaxIterations.getText().equals("") == false)
         {
-            maxIterations = Double.parseDouble(txtMaxIterations.getText());
+            maxIterations = Integer.parseInt(txtMaxIterations.getText());
         }
         else
         {
@@ -383,13 +379,13 @@ public class GUI extends JFrame {
         btnGenerate.setEnabled(everythingFilled);
     }
     
-    protected void do_btnGenerate_mouseClicked(MouseEvent e) {
-
+    protected void do_btnGenerate_mouseClicked(MouseEvent e) 
+    {
       Container cp = getContentPane();
       DrawPanel panel = new DrawPanel();
       getContentPane().add(panel, BorderLayout.CENTER);
       getContentPane().setLayout(null);
-      desiredSet = FractalGenerator.generateMandelBrotSet(10, -10, 10, -10, 0.1, 0.1);
+      desiredSet = FractalGenerator.generateMandelBrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations);
       this.ourRefresh();
       this.repaint();
         
