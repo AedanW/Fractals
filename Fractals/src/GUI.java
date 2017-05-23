@@ -424,11 +424,12 @@ public class GUI extends JFrame {
       getContentPane().setLayout(null);
       /*Thread generateSet = new Thread(){
           public void run(){*/
-              desiredSet = FractalGenerator.generateMandelBrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations);
+              //desiredSet = FractalGenerator.generateMandelBrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, 4);
       //    }
       //};
       //generateSet.start();
-      
+      Complex c = new Complex(0.657,0.718);
+      desiredSet = FractalGenerator.generateJuliaSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, c);
       if (radRandomColours.isSelected())
       {
           colourList = new Color[maxIterations];
