@@ -50,6 +50,7 @@ public class GUI extends JFrame {
     private double maxY;
     private double xRes;
     private double yRes;
+    private Complex juliaSetValue;
     private boolean doNotDraw = false;
     private int maxIterations;
     final int FRAMES_PER_SECOND = 10;
@@ -65,6 +66,7 @@ public class GUI extends JFrame {
     
     Point[][] desiredSet = null;
     private JRadioButton radRandomColours;
+    private JTextField txtJuliaSetImaginaryValue;
 
     /**
      * Launch the application.
@@ -152,12 +154,12 @@ public class GUI extends JFrame {
         }});
         txtJuliaSetValue = new JTextField();
         txtJuliaSetValue.setEditable(false);
-        txtJuliaSetValue.setBounds(888, 218, 86, 20);
+        txtJuliaSetValue.setBounds(834, 266, 86, 20);
         contentPane.add(txtJuliaSetValue);
         txtJuliaSetValue.setColumns(10);
         
-        JLabel lblJuliaSetValue = new JLabel("Julia Set Value:");
-        lblJuliaSetValue.setBounds(790, 222, 94, 14);
+        JLabel lblJuliaSetValue = new JLabel("Julia Set Real Value:");
+        lblJuliaSetValue.setBounds(814, 236, 125, 14);
         contentPane.add(lblJuliaSetValue);
         
         btnGenerate = new JButton("Generate");
@@ -171,12 +173,12 @@ public class GUI extends JFrame {
         contentPane.add(btnGenerate);
         
         txtMaxIterations = new JTextField();
-        txtMaxIterations.setBounds(888, 249, 86, 20);
+        txtMaxIterations.setBounds(834, 394, 86, 20);
         contentPane.add(txtMaxIterations);
         txtMaxIterations.setColumns(10);
         
         JLabel lblMaxIterations = new JLabel("Max Iterations:");
-        lblMaxIterations.setBounds(790, 252, 84, 14);
+        lblMaxIterations.setBounds(814, 364, 84, 14);
         contentPane.add(lblMaxIterations);
         
         JLabel lblXRes = new JLabel("X Resolution");
@@ -199,8 +201,18 @@ public class GUI extends JFrame {
         
         radRandomColours = new JRadioButton("Random Colours");
         radRandomColours.setBackground(SystemColor.inactiveCaption);
-        radRandomColours.setBounds(794, 276, 180, 23);
+        radRandomColours.setBounds(794, 420, 180, 23);
         contentPane.add(radRandomColours);
+        
+        JLabel lblJuliaSetImaginaryValue = new JLabel("Julia Set Imaginary Value:");
+        lblJuliaSetImaginaryValue.setBounds(814, 293, 150, 14);
+        contentPane.add(lblJuliaSetImaginaryValue);
+        
+        txtJuliaSetImaginaryValue = new JTextField();
+        txtJuliaSetImaginaryValue.setEditable(false);
+        txtJuliaSetImaginaryValue.setColumns(10);
+        txtJuliaSetImaginaryValue.setBounds(834, 327, 86, 20);
+        contentPane.add(txtJuliaSetImaginaryValue);
         
 //        btnGenerate.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){
 //        }});
@@ -320,11 +332,18 @@ public class GUI extends JFrame {
         if (radGenerateJuliaSet.isSelected() == true)
         {
             txtJuliaSetValue.setEditable(true);
+            txtJuliaSetImaginaryValue.setEditable(true);
+            try{
+                juliaSetValue = new Complex(Double.parseDouble(txtJuliaSetValue.getText()),Double.parseDouble(txtJuliaSetImaginaryValue.getText()));
+            }catch(NumberFormatException e){}
+            
         }
         else
         {
             txtJuliaSetValue.setEditable(false);
             txtJuliaSetValue.setText("");
+            txtJuliaSetImaginaryValue.setEditable(false);
+            txtJuliaSetImaginaryValue.setText("");
         }
         
         
@@ -404,6 +423,10 @@ public class GUI extends JFrame {
         {
             everythingFilled = false;
         }
+        if (radGenerateJuliaSet.isSelected() && txtJuliaSetImaginaryValue.getText().equals(""))
+        {
+            everythingFilled = false;
+        }
         if (txtMaxIterations.getText().equals("") == false)
         {
             maxIterations = Integer.parseInt(txtMaxIterations.getText());
@@ -428,8 +451,21 @@ public class GUI extends JFrame {
       //    }
       //};
       //generateSet.start();
-      Complex c = new Complex(0.657,0.718);
-      desiredSet = FractalGenerator.generateJuliaSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, c);
+      //Complex c = new Complex(0.657,0.718);
+      //Complex c = new Complex (0.324,0.324);
+      Complex c = new Complex(1.68, 2.34);
+      if (radGenerateJuliaSet.isSelected())
+      {
+          desiredSet = FractalGenerator.generateJuliaSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, juliaSetValue);
+      }
+      else if (radGenerateMandelbrotSet.isSelected())
+      {
+          desiredSet = FractalGenerator.generateMandelBrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations);
+      }
+      else
+      {
+          System.out.println("How did you get here?????");
+      }
       if (radRandomColours.isSelected())
       {
           colourList = new Color[maxIterations];
