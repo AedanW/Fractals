@@ -19,9 +19,9 @@ public abstract class FractalGenerator
         Complex z = new Complex(0,0);
         int row = 0;
         int col = 0;
-        while (x <= maxX)
+        while (x - (x%xRes) <= maxX)
         {
-            while (y <= maxY)
+            while (y - (y%yRes) <= maxY)
             {
                 int iterations = 0;
                 Complex current = new Complex(x,y);
@@ -33,7 +33,12 @@ public abstract class FractalGenerator
                     z = newZValue;
                     iterations++;
                 }
+                try{
                 fractal[fractal.length-1-row][col] = new Point(x,y,iterations);
+                } 
+                catch(ArrayIndexOutOfBoundsException e){
+                    System.out.println("ArrayIndexOutOfBounds at " + row + " " + col + ", bummer.");
+                }
                 y = y + yRes;
                 row++;
                 z = new Complex(0,0);

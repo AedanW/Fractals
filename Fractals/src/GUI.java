@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.time.LocalDateTime;
+
 import javax.swing.JMenuItem;
 import java.awt.Dimension;
 import java.awt.Color;
@@ -28,6 +30,7 @@ import java.awt.Canvas;
 import javax.swing.ImageIcon;
 import java.awt.Toolkit;
 import java.awt.Font;
+import javax.swing.SwingConstants;
 
 public class GUI extends JFrame {
 
@@ -47,8 +50,9 @@ public class GUI extends JFrame {
     private double maxY;
     private double xRes;
     private double yRes;
+    private boolean doNotDraw = false;
     private int maxIterations;
-    final int FRAMES_PER_SECOND = 30;
+    final int FRAMES_PER_SECOND = 10;
     long current_time = 0;                              //MILLISECONDS
     long next_refresh_time = 0;                         //MILLISECONDS
     long minimum_delta_time = 1000 / FRAMES_PER_SECOND; //MILLISECONDS
@@ -60,6 +64,7 @@ public class GUI extends JFrame {
     private JTextField txtYResolution;
     
     Point[][] desiredSet = null;
+    private JRadioButton radRandomColours;
 
     /**
      * Launch the application.
@@ -192,6 +197,11 @@ public class GUI extends JFrame {
         txtYResolution.setBounds(888, 136, 86, 20);
         contentPane.add(txtYResolution);
         
+        radRandomColours = new JRadioButton("Random Colours");
+        radRandomColours.setBackground(SystemColor.inactiveCaption);
+        radRandomColours.setBounds(794, 276, 180, 23);
+        contentPane.add(radRandomColours);
+        
 //        btnGenerate.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){
 //        }});
 //        
@@ -209,11 +219,21 @@ public class GUI extends JFrame {
                 {
                     return;
                 }
-             
-                if (desiredSet == null) {
+                if ((desiredSet == null)){
                     return;
                 }
+                if (doNotDraw == true)
+                {
+                    System.out.println("It gets here!");
+                    return;
+                }
+                else {
+                    System.out.println("I better draw!" + LocalDateTime.now().toString());
+                }
                     
+                
+                g.setColor(getBackground());
+                
                 this.resize(this.getParent().getWidth() - 8, this.getParent().getHeight() - 8);
                 double cell_width = ((double)this.getWidth() - 200)/ (desiredSet.length);
                 double cell_height = (double)(this.getHeight()) / (desiredSet[0].length);
@@ -221,12 +241,9 @@ public class GUI extends JFrame {
                 System.out.println("parent width = " + this.getParent().getWidth());
                 System.out.println("DrawPanel width = " + this.getWidth());
                 
-                //BS way of clearing out the old rectangle to save CPU.
-                //g.setColor(getBackground());
-
-                for (int y = 0; y < desiredSet[0].length; y++)
+                for (int y = 0; y < desiredSet.length; y++)
                 {
-                    for (int x = 0; x < desiredSet.length; x++)
+                    for (int x = 0; x < desiredSet[0].length; x++)
                     {
                         if (desiredSet[y][x].iterations == FractalGenerator.maxIterations)
                         {
@@ -237,10 +254,14 @@ public class GUI extends JFrame {
                             int colourIndex = desiredSet[y][x].iterations % colourList.length;
                             g.setColor(colourList[colourIndex]);
                         }
-                        g.fillRect((int)(x * cell_width),(int)(y * cell_height + 8), (int)(cell_width) + 1, (int)(cell_height) + 1);                                
+                        g.fillRect((int)(y * cell_width),(int)(x * cell_height + 8), (int)(cell_width) + 1, (int)(cell_height) + 1);                                
                     }
+                    ourRefresh();
+                    repaint();
                 }
                 ourRefresh();
+                repaint();
+                //generateSet.stop();
             }
     }
 
@@ -253,8 +274,7 @@ public class GUI extends JFrame {
               gameLoop();
            }
         };
-        loop.start();
-        
+        loop.start();  
     }
     
     private void gameLoop() {
@@ -310,7 +330,11 @@ public class GUI extends JFrame {
         
         if (txtXMinimum.getText().equals("") == false)
         {
+            try{
             minX = Double.parseDouble(txtXMinimum.getText());
+            }catch(NumberFormatException e){
+                
+            }
         }
         else
         {
@@ -318,7 +342,11 @@ public class GUI extends JFrame {
         }
         if (txtXMaximum.getText().equals("") == false)
         {
+            try{
             maxX = Double.parseDouble(txtXMaximum.getText());
+            }catch(NumberFormatException e){
+                
+            }
         }
         else
         {
@@ -326,7 +354,11 @@ public class GUI extends JFrame {
         }
         if (txtYMinimum.getText().equals("") == false)
         {
+            try{
             minY = Double.parseDouble(txtYMinimum.getText());
+            }catch(NumberFormatException e){ 
+                
+            }
         }
         else
         {
@@ -334,7 +366,11 @@ public class GUI extends JFrame {
         }
         if (txtYMaximum.getText().equals("") == false)
         {
+            try{
             maxY = Double.parseDouble(txtYMaximum.getText());
+            }catch(NumberFormatException e){
+                
+            }
         }
         else
         {
@@ -381,13 +417,31 @@ public class GUI extends JFrame {
     
     protected void do_btnGenerate_mouseClicked(MouseEvent e) 
     {
+      doNotDraw = true;
       Container cp = getContentPane();
       DrawPanel panel = new DrawPanel();
       getContentPane().add(panel, BorderLayout.CENTER);
       getContentPane().setLayout(null);
-      desiredSet = FractalGenerator.generateMandelBrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations);
+      /*Thread generateSet = new Thread(){
+          public void run(){*/
+              desiredSet = FractalGenerator.generateMandelBrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations);
+      //    }
+      //};
+      //generateSet.start();
+      
+      if (radRandomColours.isSelected())
+      {
+          colourList = new Color[maxIterations];
+          for(int i = 0; i < colourList.length ; i++){
+              colourList[i] = new Color((int)(Math.random() * 255 + 1),(int)(Math.random() * 255 + 1),(int)(Math.random() * 255 + 1));
+          }
+      }
+      else
+      {
+          colourList = new Color[]{Color.RED,Color.ORANGE,Color.YELLOW,Color.GREEN,Color.CYAN,Color.BLUE,Color.MAGENTA,Color.PINK,new Color(112,39,195)};
+      }
       this.ourRefresh();
       this.repaint();
-        
+      doNotDraw = false;
     }
 }
