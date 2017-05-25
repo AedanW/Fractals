@@ -44,6 +44,7 @@ public class GUI extends JFrame {
     private JTextField txtJuliaSetValue;
     private JButton btnGenerate;
     private JTextField txtMaxIterations;
+    private int exponent;
     private double minX;
     private double maxX;
     private double minY;
@@ -67,6 +68,8 @@ public class GUI extends JFrame {
     Point[][] desiredSet = null;
     private JRadioButton radRandomColours;
     private JTextField txtJuliaSetImaginaryValue;
+    private JRadioButton radSmoothColours;
+    private JTextField txtExponent;
 
     /**
      * Launch the application.
@@ -100,6 +103,7 @@ public class GUI extends JFrame {
         contentPane.setLayout(null);
         
         txtXMinimum = new JTextField();
+        txtXMinimum.setText("-2");
         txtXMinimum.setBounds(888, 11, 86, 20);
         contentPane.add(txtXMinimum);
         txtXMinimum.setColumns(10);
@@ -113,11 +117,13 @@ public class GUI extends JFrame {
         contentPane.add(lblXMaximum);
         
         txtXMaximum = new JTextField();
+        txtXMaximum.setText("2");
         txtXMaximum.setBounds(888, 36, 86, 20);
         contentPane.add(txtXMaximum);
         txtXMaximum.setColumns(10);
         
         txtYMinimum = new JTextField();
+        txtYMinimum.setText("-2");
         txtYMinimum.setColumns(10);
         txtYMinimum.setBounds(888, 61, 86, 20);
         contentPane.add(txtYMinimum);
@@ -131,6 +137,7 @@ public class GUI extends JFrame {
         contentPane.add(lblYMaximum);
         
         txtYMaximum = new JTextField();
+        txtYMaximum.setText("2");
         txtYMaximum.setColumns(10);
         txtYMaximum.setBounds(888, 86, 86, 20);
         contentPane.add(txtYMaximum);
@@ -154,12 +161,12 @@ public class GUI extends JFrame {
         }});
         txtJuliaSetValue = new JTextField();
         txtJuliaSetValue.setEditable(false);
-        txtJuliaSetValue.setBounds(834, 266, 86, 20);
+        txtJuliaSetValue.setBounds(834, 307, 86, 20);
         contentPane.add(txtJuliaSetValue);
         txtJuliaSetValue.setColumns(10);
         
         JLabel lblJuliaSetValue = new JLabel("Julia Set Real Value:");
-        lblJuliaSetValue.setBounds(814, 236, 125, 14);
+        lblJuliaSetValue.setBounds(818, 282, 125, 14);
         contentPane.add(lblJuliaSetValue);
         
         btnGenerate = new JButton("Generate");
@@ -173,12 +180,13 @@ public class GUI extends JFrame {
         contentPane.add(btnGenerate);
         
         txtMaxIterations = new JTextField();
-        txtMaxIterations.setBounds(834, 394, 86, 20);
+        txtMaxIterations.setText("100");
+        txtMaxIterations.setBounds(834, 419, 86, 20);
         contentPane.add(txtMaxIterations);
         txtMaxIterations.setColumns(10);
         
         JLabel lblMaxIterations = new JLabel("Max Iterations:");
-        lblMaxIterations.setBounds(814, 364, 84, 14);
+        lblMaxIterations.setBounds(818, 394, 84, 14);
         contentPane.add(lblMaxIterations);
         
         JLabel lblXRes = new JLabel("X Resolution");
@@ -190,29 +198,46 @@ public class GUI extends JFrame {
         contentPane.add(lblYRes);
         
         txtXResolution = new JTextField();
+        txtXResolution.setText("0.01");
         txtXResolution.setBounds(888, 111, 86, 20);
         contentPane.add(txtXResolution);
         txtXResolution.setColumns(10);
         
         txtYResolution = new JTextField();
+        txtYResolution.setText("0.01");
         txtYResolution.setColumns(10);
         txtYResolution.setBounds(888, 136, 86, 20);
         contentPane.add(txtYResolution);
         
         radRandomColours = new JRadioButton("Random Colours");
         radRandomColours.setBackground(SystemColor.inactiveCaption);
-        radRandomColours.setBounds(794, 420, 180, 23);
+        radRandomColours.setBounds(794, 446, 180, 23);
         contentPane.add(radRandomColours);
         
         JLabel lblJuliaSetImaginaryValue = new JLabel("Julia Set Imaginary Value:");
-        lblJuliaSetImaginaryValue.setBounds(814, 293, 150, 14);
+        lblJuliaSetImaginaryValue.setBounds(818, 338, 150, 14);
         contentPane.add(lblJuliaSetImaginaryValue);
         
         txtJuliaSetImaginaryValue = new JTextField();
         txtJuliaSetImaginaryValue.setEditable(false);
         txtJuliaSetImaginaryValue.setColumns(10);
-        txtJuliaSetImaginaryValue.setBounds(834, 327, 86, 20);
+        txtJuliaSetImaginaryValue.setBounds(834, 363, 86, 20);
         contentPane.add(txtJuliaSetImaginaryValue);
+        
+        radSmoothColours = new JRadioButton("Smooth Colours");
+        radSmoothColours.setBackground(SystemColor.inactiveCaption);
+        radSmoothColours.setBounds(794, 472, 170, 23);
+        contentPane.add(radSmoothColours);
+        
+        txtExponent = new JTextField();
+        txtExponent.setText("2");
+        txtExponent.setBounds(834, 251, 86, 20);
+        contentPane.add(txtExponent);
+        txtExponent.setColumns(10);
+        
+        JLabel lblNewLabel_1 = new JLabel("Exponent Of Z");
+        lblNewLabel_1.setBounds(818, 226, 102, 14);
+        contentPane.add(lblNewLabel_1);
         
 //        btnGenerate.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){
 //        }});
@@ -403,6 +428,18 @@ public class GUI extends JFrame {
         {
             everythingFilled = false;
         }
+        if (txtExponent.getText().equals("") == false)
+        {
+            try{
+                exponent = Integer.parseInt(txtExponent.getText());
+                }catch(NumberFormatException e){
+                    
+                }
+        }
+        else
+        {
+            everythingFilled = false;
+        }
         if (txtYResolution.getText().equals("") == false)
         {
             yRes = Double.parseDouble(txtYResolution.getText());
@@ -451,20 +488,32 @@ public class GUI extends JFrame {
       //    }
       //};
       //generateSet.start();
+      
+      //Example values for Julia Sets
+      
       //Complex c = new Complex(0.657,0.718);
       //Complex c = new Complex (0.324,0.324);
-      Complex c = new Complex(1.68, 2.34);
-      if (radGenerateJuliaSet.isSelected())
+      //Complex c = new Complex(1.68, 2.34);
+      
+      if (FractalGenerator.canGenerateMandelbrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, exponent).equals("No issues with any of the values"))
       {
-          desiredSet = FractalGenerator.generateJuliaSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, juliaSetValue);
-      }
-      else if (radGenerateMandelbrotSet.isSelected())
-      {
-          desiredSet = FractalGenerator.generateMandelBrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations);
+          if (radGenerateJuliaSet.isSelected())
+          {
+              desiredSet = FractalGenerator.generateJuliaSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, juliaSetValue, exponent);
+          }
+          else if (radGenerateMandelbrotSet.isSelected())
+          {
+              desiredSet = FractalGenerator.generateMandelBrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, exponent);
+          }
+          else
+          {
+              System.out.println("How did you get here?????");
+          }
       }
       else
       {
-          System.out.println("How did you get here?????");
+          System.out.println(FractalGenerator.canGenerateMandelbrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, exponent));
+          desiredSet = null;
       }
       if (radRandomColours.isSelected())
       {
@@ -476,6 +525,16 @@ public class GUI extends JFrame {
       else
       {
           colourList = new Color[]{Color.RED,Color.ORANGE,Color.YELLOW,Color.GREEN,Color.CYAN,Color.BLUE,Color.MAGENTA,Color.PINK,new Color(112,39,195)};
+      }
+      if (radSmoothColours.isSelected() && maxIterations <= 255)
+      {
+          colourList = new Color[maxIterations];
+          double increment = 255/maxIterations;
+          double sumOfIncrements = 255;
+          for(int i = 0; i < colourList.length ; i++){
+              colourList[i] = new Color(0,0,(int)sumOfIncrements);
+              sumOfIncrements = sumOfIncrements - increment;
+          }
       }
       this.ourRefresh();
       this.repaint();
