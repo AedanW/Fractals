@@ -1,4 +1,4 @@
-import java.awt.BorderLayout;
+ import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Graphics;
 
@@ -15,9 +15,12 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 
 import javax.swing.JMenuItem;
 import java.awt.Dimension;
@@ -31,9 +34,16 @@ import javax.swing.ImageIcon;
 import java.awt.Toolkit;
 import java.awt.Font;
 import javax.swing.SwingConstants;
+import javax.swing.JProgressBar;
+
+import javax.swing.*;
+import java.awt.*;
+import java.time.*;
+import java.awt.event.KeyAdapter;
 
 public class GUI extends JFrame {
-
+    
+    boolean moved = false;
     private JPanel contentPane;
     private JTextField txtXMinimum;
     private JTextField txtXMaximum;
@@ -65,15 +75,17 @@ public class GUI extends JFrame {
     private JTextField txtXResolution;
     private JTextField txtYResolution;
     
-    Point[][] desiredSet = null;
+    int[][] desiredSet = null;
     private JRadioButton radRandomColours;
     private JTextField txtJuliaSetImaginaryValue;
     private JRadioButton radSmoothColours;
     private JTextField txtExponent;
+    protected JProgressBar progressBar;
 
     /**
      * Launch the application.
      */
+    
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
@@ -92,7 +104,21 @@ public class GUI extends JFrame {
      */
     public GUI() 
     {
-    	setIconImage(Toolkit.getDefaultToolkit().getImage("Z:\\Desktop\\mandelbrot.jpg"));
+        getContentPane().addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent arg0) {
+                //do_thisContentPane_keyPressed(arg0);
+            }
+        });
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent arg0) {
+                do_this_mouseClicked(arg0);
+            }
+        });
+        setFocusable(true);
+        setFocusTraversalKeysEnabled(false);
+    	setIconImage(Toolkit.getDefaultToolkit().getImage(GUI.class.getResource("/resources/Close Up At One Of The Bulbs.png")));
         setTitle("Fractals");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 1000, 600);
@@ -100,6 +126,7 @@ public class GUI extends JFrame {
         contentPane.setBackground(SystemColor.inactiveCaption);
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
+        getContentPane().setLayout(null);
         contentPane.setLayout(null);
         
         txtXMinimum = new JTextField();
@@ -107,39 +134,69 @@ public class GUI extends JFrame {
         txtXMinimum.setBounds(888, 11, 86, 20);
         contentPane.add(txtXMinimum);
         txtXMinimum.setColumns(10);
+        txtXMinimum.setFocusable(false);
+        txtXMinimum.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                do_textField_keyTyped(arg0);
+            }
+        });
         
         JLabel lblNewLabel = new JLabel("X Minimum");
         lblNewLabel.setBounds(818, 15, 70, 14);
         contentPane.add(lblNewLabel);
+        lblNewLabel.setFocusable(false);
         
         JLabel lblXMaximum = new JLabel("X Maximum");
         lblXMaximum.setBounds(818, 40, 70, 14);
         contentPane.add(lblXMaximum);
+        lblXMaximum.setFocusable(false);
         
         txtXMaximum = new JTextField();
         txtXMaximum.setText("2");
         txtXMaximum.setBounds(888, 36, 86, 20);
         contentPane.add(txtXMaximum);
         txtXMaximum.setColumns(10);
+        txtXMaximum.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                do_textField_keyTyped(arg0);
+            }
+        });
         
         txtYMinimum = new JTextField();
         txtYMinimum.setText("-2");
         txtYMinimum.setColumns(10);
         txtYMinimum.setBounds(888, 61, 86, 20);
         contentPane.add(txtYMinimum);
+        txtYMinimum.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                do_textField_keyTyped(arg0);
+            }
+        });
         
         JLabel lblXMinimum = new JLabel("Y Minimum");
         lblXMinimum.setBounds(818, 65, 70, 14);
+        lblXMinimum.setFocusable(false);
         contentPane.add(lblXMinimum);
         
         JLabel lblYMaximum = new JLabel("Y Maximum");
         lblYMaximum.setBounds(818, 90, 70, 14);
+        lblYMaximum.setFocusable(false);
         contentPane.add(lblYMaximum);
+        
         
         txtYMaximum = new JTextField();
         txtYMaximum.setText("2");
         txtYMaximum.setColumns(10);
         txtYMaximum.setBounds(888, 86, 86, 20);
+        txtYMaximum.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                do_textField_keyTyped(arg0);
+            }
+        });
         contentPane.add(txtYMaximum);
         
         radGenerateMandelbrotSet = new JRadioButton("Generate Mandelbrot set");
@@ -150,8 +207,10 @@ public class GUI extends JFrame {
         	ourRefresh();
         }});
         contentPane.add(radGenerateMandelbrotSet);
+        radGenerateMandelbrotSet.setFocusable(false);
         
         radGenerateJuliaSet = new JRadioButton("Generate Julia set");
+        radGenerateJuliaSet.setFocusable(false);
         radGenerateJuliaSet.setBackground(SystemColor.inactiveCaption);
         radGenerateJuliaSet.setBounds(794, 188, 180, 23);
         contentPane.add(radGenerateJuliaSet);
@@ -166,82 +225,421 @@ public class GUI extends JFrame {
         txtJuliaSetValue.setColumns(10);
         
         JLabel lblJuliaSetValue = new JLabel("Julia Set Real Value:");
+        lblJuliaSetValue.setFocusable(false);
         lblJuliaSetValue.setBounds(818, 282, 125, 14);
         contentPane.add(lblJuliaSetValue);
         
         btnGenerate = new JButton("Generate");
+        btnGenerate.setFocusable(false);
         btnGenerate.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 do_btnGenerate_mouseClicked(e);
             }
         });
-        btnGenerate.setBounds(845, 516, 89, 23);
+        btnGenerate.setBounds(845, 528, 89, 23);
         contentPane.add(btnGenerate);
         
         txtMaxIterations = new JTextField();
         txtMaxIterations.setText("100");
+        txtMaxIterations.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                do_textField_keyTyped(arg0);
+            }
+        });
         txtMaxIterations.setBounds(834, 419, 86, 20);
         contentPane.add(txtMaxIterations);
         txtMaxIterations.setColumns(10);
         
         JLabel lblMaxIterations = new JLabel("Max Iterations:");
+        lblMaxIterations.setFocusable(false);
         lblMaxIterations.setBounds(818, 394, 84, 14);
         contentPane.add(lblMaxIterations);
         
         JLabel lblXRes = new JLabel("X Resolution");
+        lblXRes.setFocusable(false);
         lblXRes.setBounds(814, 115, 83, 14);
         contentPane.add(lblXRes);
         
         JLabel lblYRes = new JLabel("Y Resolution");
+        lblYRes.setFocusable(false);
         lblYRes.setBounds(814, 140, 70, 14);
         contentPane.add(lblYRes);
         
         txtXResolution = new JTextField();
-        txtXResolution.setText("0.01");
+        txtXResolution.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                do_textField_keyTyped(arg0);
+            }
+        });
+        txtXResolution.setText("0.1");
         txtXResolution.setBounds(888, 111, 86, 20);
         contentPane.add(txtXResolution);
         txtXResolution.setColumns(10);
         
         txtYResolution = new JTextField();
-        txtYResolution.setText("0.01");
+        txtYResolution.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                do_textField_keyTyped(arg0);
+            }
+        });
+        txtYResolution.setText("0.1");
         txtYResolution.setColumns(10);
         txtYResolution.setBounds(888, 136, 86, 20);
         contentPane.add(txtYResolution);
         
         radRandomColours = new JRadioButton("Random Colours");
+        radRandomColours.setFocusable(false);
         radRandomColours.setBackground(SystemColor.inactiveCaption);
         radRandomColours.setBounds(794, 446, 180, 23);
         contentPane.add(radRandomColours);
         
         JLabel lblJuliaSetImaginaryValue = new JLabel("Julia Set Imaginary Value:");
+        lblJuliaSetImaginaryValue.setFocusable(false);
         lblJuliaSetImaginaryValue.setBounds(818, 338, 150, 14);
         contentPane.add(lblJuliaSetImaginaryValue);
         
         txtJuliaSetImaginaryValue = new JTextField();
+        txtJuliaSetImaginaryValue.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                do_textField_keyTyped(arg0);
+            }
+        });
         txtJuliaSetImaginaryValue.setEditable(false);
         txtJuliaSetImaginaryValue.setColumns(10);
         txtJuliaSetImaginaryValue.setBounds(834, 363, 86, 20);
         contentPane.add(txtJuliaSetImaginaryValue);
         
         radSmoothColours = new JRadioButton("Smooth Colours");
+        radSmoothColours.setFocusable(false);
         radSmoothColours.setBackground(SystemColor.inactiveCaption);
         radSmoothColours.setBounds(794, 472, 170, 23);
         contentPane.add(radSmoothColours);
         
         txtExponent = new JTextField();
+        txtExponent.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent arg0) {
+                do_textField_keyTyped(arg0);
+            }
+        });
         txtExponent.setText("2");
         txtExponent.setBounds(834, 251, 86, 20);
         contentPane.add(txtExponent);
         txtExponent.setColumns(10);
         
         JLabel lblNewLabel_1 = new JLabel("Exponent Of Z");
+        lblNewLabel_1.setFocusable(false);
         lblNewLabel_1.setBounds(818, 226, 102, 14);
         contentPane.add(lblNewLabel_1);
         
-//        btnGenerate.addActionListener(new ActionListener(){public void actionPerformed(ActionEvent e){
-//        }});
-//        
+        progressBar = new JProgressBar();
+        progressBar.setFocusable(false);
+        progressBar.setBounds(818, 502, 146, 14);
+        contentPane.add(progressBar);
+        progressBar.setMinimum(0);
+        progressBar.setMaximum(100);
+          
+        this.addKeyListener(new KeyListener() 
+        {
+            public void keyTyped(KeyEvent e) 
+            {
+                System.out.println("Key typed code=" + e.getKeyCode() + ", char=" + e.getKeyChar());
+            }
+            public void keyPressed(KeyEvent e) 
+            {
+                System.out.println("Key pressed code=" + e.getKeyCode() + ", char=" + e.getKeyChar());
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT)
+                {
+                    int row = 1;
+                    int col = 0;
+                   
+                    while (row < desiredSet.length)
+                    {
+                        while (col < desiredSet[0].length)
+                        {
+                            desiredSet[row-1][col] = desiredSet[row][col];
+                            col++;
+                        }
+                        row++;
+                        col = 0;
+                    }
+                   
+                    
+                    int[][] tempSet = FractalGenerator.generateMandelBrotSetReturningInts(maxX+xRes, maxX, maxY, minY, xRes, yRes, maxIterations, exponent);
+                    System.out.println(maxX);
+                    System.out.println(minX);
+                    maxX = maxX + xRes;
+                    minX = minX + xRes;
+                    int f = 1;
+                    double xResTemp = xRes;
+                    while (xResTemp < 1.0)
+                    {
+                        xResTemp = xResTemp * 10;
+                        f++;
+                    }
+                    maxX = Math.round(maxX*Math.pow(10, f)) / (Math.pow(10, f));
+                    minX = Math.round(minX*Math.pow(10, f)) / (Math.pow(10, f));
+                    txtXMaximum.setText(maxX + "");
+                    txtXMinimum.setText(minX + "");
+                    moved = true;
+                    desiredSet[desiredSet[0].length-1]= Arrays.copyOf(tempSet[0], tempSet[0].length);
+                }
+                else if (e.getKeyCode() == KeyEvent.VK_LEFT)
+                {
+                    int row = desiredSet.length-1;
+                    int col = 0;
+                   
+                    while (row > 0)
+                    {
+                        while (col < desiredSet[0].length)
+                        {
+                            desiredSet[row][col] = desiredSet[row-1][col];
+                            col++;
+                        }
+                        row--;
+                        col = 0;
+                    }
+                   
+                    
+                    int[][] tempSet = FractalGenerator.generateMandelBrotSetReturningInts(minX, minX-xRes, maxY, minY, xRes, yRes, maxIterations, exponent);
+                    System.out.println(maxX);
+                    System.out.println(minX);
+                    maxX = maxX - xRes;
+                    minX = minX - xRes;
+                    int f = 1;
+                    double xResTemp = xRes;
+                    while (xResTemp < 1.0)
+                    {
+                        xResTemp = xResTemp * 10;
+                        f++;
+                    }
+                    maxX = Math.round(maxX*Math.pow(10, f)) / (Math.pow(10, f));
+                    minX = Math.round(minX*Math.pow(10, f)) / (Math.pow(10, f));
+                    txtXMaximum.setText(maxX + "");
+                    txtXMinimum.setText(minX + "");
+                    moved = true;
+                    desiredSet[0]= Arrays.copyOf(tempSet[0], tempSet[0].length);
+                }
+                else if (e.getKeyCode() == KeyEvent.VK_UP)
+                {
+                    int row = 0;
+                    int col = desiredSet[0].length-1;
+                    
+                    while (col > 0)
+                    {
+                        while (row < desiredSet.length)
+                        {
+                            desiredSet[row][col] = desiredSet[row][col-1];
+                            row++;
+                        }
+                        col--;
+                        row = 0;
+                    }
+                    
+                    int[][] tempSet = FractalGenerator.generateMandelBrotSetReturningInts(maxX, minX, maxY+yRes, maxY, xRes, yRes, maxIterations, exponent);
+                    int i = 0;
+                    System.out.println(maxY);
+                    System.out.println(minY);
+                    maxY = maxY + yRes;
+                    minY = minY + yRes;
+                    int f = 1;
+                    double yResTemp = yRes;
+                    while (yResTemp < 1.0)
+                    {
+                        yResTemp = yResTemp * 10;
+                        f++;
+                    }
+                    maxY = Math.round(maxY*Math.pow(10, f)) / (Math.pow(10, f));
+                    minY = Math.round(minY*Math.pow(10, f)) / (Math.pow(10, f));
+                    txtYMaximum.setText(maxY + "");
+                    txtYMinimum.setText(minY + "");
+                    moved = true;
+                    while (i < desiredSet.length)
+                    {
+                        desiredSet[i][0] = tempSet[i][1];
+                        i++;
+                    }
+                }
+                else if (e.getKeyCode() == KeyEvent.VK_DOWN)
+                {
+                    int row = 0;
+                    int col = 1;
+                   
+                    while (col < desiredSet[0].length)
+                    {
+                        while (row < desiredSet.length)
+                        {
+                            desiredSet[row][col-1] = desiredSet[row][col];
+                            row++;
+                        }
+                        col++;
+                        row = 0;
+                    }
+                   
+                    
+                    int[][] tempSet = FractalGenerator.generateMandelBrotSetReturningInts(maxX, minX, minY, minY-yRes, xRes, yRes, maxIterations, exponent);
+                    int i = 0;
+                    System.out.println(maxY);
+                    System.out.println(minY);
+                    maxY = maxY - yRes;
+                    minY = minY - yRes;
+                    int f = 1;
+                    double yResTemp = yRes;
+                    while (yResTemp < 1.0)
+                    {
+                        yResTemp = yResTemp * 10;
+                        f++;
+                    }
+                    maxY = Math.round(maxY*Math.pow(10, f)) / (Math.pow(10, f));
+                    minY = Math.round(minY*Math.pow(10, f)) / (Math.pow(10, f));
+                    txtYMaximum.setText(maxY + "");
+                    txtYMinimum.setText(minY + "");
+                    moved = true;
+                    while (i < desiredSet.length)
+                    {
+                        desiredSet[i][desiredSet[0].length-1] = tempSet[i][1];
+                        i++;
+                    }
+                }
+                else if (e.getKeyCode() == KeyEvent.VK_Z)
+                {
+                    int[][] tempSet = new int[desiredSet.length-2][desiredSet[0].length-2];
+                    int col = 1;
+                    int row = 1;
+                    while (col < desiredSet[0].length-1)
+                    {
+                        while (row < desiredSet.length-1)
+                        {
+                            tempSet[row-1][col-1] = desiredSet[row][col];
+                            row++;
+                        }
+                        row = 1;
+                        col++;
+                    }
+                    
+                    maxX = maxX - xRes;
+                    minX = minX + xRes;
+                    int f = 1;
+                    double xResTemp = xRes;
+                    while (xResTemp < 1.0)
+                    {
+                        xResTemp = xResTemp * 10;
+                        f++;
+                    }
+                    maxX = Math.round(maxX*Math.pow(10, f)) / (Math.pow(10, f));
+                    minX = Math.round(minX*Math.pow(10, f)) / (Math.pow(10, f));
+                    txtXMaximum.setText(maxX + "");
+                    txtXMinimum.setText(minX + "");
+                    maxY = maxY - yRes;
+                    minY = minY + yRes;
+                    f = 1;
+                    double yResTemp = yRes;
+                    while (yResTemp < 1.0)
+                    {
+                        yResTemp = yResTemp * 10;
+                        f++;
+                    }
+                    maxY = Math.round(maxY*Math.pow(10, f)) / (Math.pow(10, f));
+                    minY = Math.round(minY*Math.pow(10, f)) / (Math.pow(10, f));
+                    txtYMaximum.setText(maxY + "");
+                    txtYMinimum.setText(minY + "");
+                    desiredSet = tempSet;
+                    moved = true;
+                }
+                else if (e.getKeyCode() == KeyEvent.VK_X)
+                {
+                    int[][] newSet = new int[desiredSet.length+2][desiredSet[0].length+2];
+                    int col = 1;
+                    int row = 1;
+                    while (col < newSet[0].length-1)
+                    {
+                        while (row < newSet.length-1)
+                        {
+                            newSet[row][col] = desiredSet[row-1][col-1];
+                            row++;
+                        }
+                        row = 1;
+                        col++;
+                    }
+                    
+                    //UP
+                    
+                    int[][] tempSet = FractalGenerator.generateMandelBrotSetReturningInts(maxX + xRes, minX - xRes, maxY+yRes, maxY, xRes, yRes, maxIterations, exponent);
+                    int i = 0;
+                    moved = true;
+                    while (i < newSet.length)
+                    {
+                        newSet[i][0] = tempSet[i][1];
+                        i++;
+                    }
+                    
+                    //DOWN
+                    
+                    tempSet = FractalGenerator.generateMandelBrotSetReturningInts(maxX + xRes, minX - xRes, minY, minY-yRes, xRes, yRes, maxIterations, exponent);
+                    i = 0;
+                    while (i < newSet.length)
+                    {
+                        newSet[i][newSet[0].length-1] = tempSet[i][1];
+                        i++;
+                    }
+                    
+                    //LEFT
+                    
+                    tempSet = FractalGenerator.generateMandelBrotSetReturningInts(minX, minX-xRes, maxY+yRes, minY-yRes, xRes, yRes, maxIterations, exponent);
+                    newSet[0]= Arrays.copyOf(tempSet[0], tempSet[0].length);
+                    
+                    //RIGHT
+                    
+                    tempSet = FractalGenerator.generateMandelBrotSetReturningInts(maxX+xRes, maxX, maxY+yRes, minY-yRes, xRes, yRes, maxIterations, exponent);
+                    newSet[newSet[0].length-1]= Arrays.copyOf(tempSet[0], tempSet[0].length);
+                    
+                    
+                    
+                    
+                    maxX = maxX + xRes;
+                    minX = minX - xRes;
+                    int f = 1;
+                    double xResTemp = xRes;
+                    while (xResTemp < 1.0)
+                    {
+                        xResTemp = xResTemp * 10;
+                        f++;
+                    }
+                    maxX = Math.round(maxX*Math.pow(10, f)) / (Math.pow(10, f));
+                    minX = Math.round(minX*Math.pow(10, f)) / (Math.pow(10, f));
+                    txtXMaximum.setText(maxX + "");
+                    txtXMinimum.setText(minX + "");
+                    maxY = maxY + yRes;
+                    minY = minY - yRes;
+                    f = 1;
+                    double yResTemp = yRes;
+                    while (yResTemp < 1.0)
+                    {
+                        yResTemp = yResTemp * 10;
+                        f++;
+                    }
+                    maxY = Math.round(maxY*Math.pow(10, f)) / (Math.pow(10, f));
+                    minY = Math.round(minY*Math.pow(10, f)) / (Math.pow(10, f));
+                    txtYMaximum.setText(maxY + "");
+                    txtYMinimum.setText(minY + "");
+                    
+                    
+                    
+                    desiredSet = newSet;
+                }
+            }
+            
+            public void keyReleased(KeyEvent e) 
+            {
+                System.out.println("Key released code=" + e.getKeyCode() + ", char=" + e.getKeyChar());
+            }
+        });
+        
         ourRefresh(); 
         run();
     }
@@ -256,16 +654,18 @@ public class GUI extends JFrame {
                 {
                     return;
                 }
+
                 if ((desiredSet == null)){
+                    g.setColor(getBackground());
                     return;
                 }
                 if (doNotDraw == true)
                 {
-                    System.out.println("It gets here!");
+                    //System.out.println("It gets here!");
                     return;
                 }
                 else {
-                    System.out.println("I better draw!" + LocalDateTime.now().toString());
+                    //System.out.println("I better draw!" + LocalDateTime.now().toString());
                 }
                     
                 
@@ -275,23 +675,23 @@ public class GUI extends JFrame {
                 double cell_width = ((double)this.getWidth() - 200)/ (desiredSet.length);
                 double cell_height = (double)(this.getHeight()) / (desiredSet[0].length);
                 
-                System.out.println("parent width = " + this.getParent().getWidth());
-                System.out.println("DrawPanel width = " + this.getWidth());
+                //System.out.println("parent width = " + this.getParent().getWidth());
+                //System.out.println("DrawPanel width = " + this.getWidth());
                 
                 for (int y = 0; y < desiredSet.length; y++)
                 {
                     for (int x = 0; x < desiredSet[0].length; x++)
                     {
-                        if (desiredSet[y][x].iterations == FractalGenerator.maxIterations)
+                        if (desiredSet[y][x] == FractalGenerator.maxIterations)
                         {
                             g.setColor(Color.BLACK);
                         }
                         else
                         {
-                            int colourIndex = desiredSet[y][x].iterations % colourList.length;
+                            int colourIndex = desiredSet[y][x] % colourList.length;
                             g.setColor(colourList[colourIndex]);
                         }
-                        g.fillRect((int)(y * cell_width),(int)(x * cell_height + 8), (int)(cell_width) + 1, (int)(cell_height) + 1);                                
+                        g.fillRect((int)(y * cell_width),(int)(x * cell_height + 8), (int)(cell_width) + 1, (int)(cell_height) + 1);
                     }
                     ourRefresh();
                     repaint();
@@ -324,7 +724,7 @@ public class GUI extends JFrame {
             updateTime();
 
             //REFRESH
-            this.repaint();
+            this.getContentPane().repaint();
             ourRefresh();
 
             //adapted from http://www.java-gaming.org/index.php?topic=24220.0
@@ -422,7 +822,11 @@ public class GUI extends JFrame {
         }
         if (txtXResolution.getText().equals("") == false)
         {
-            xRes = Double.parseDouble(txtXResolution.getText());
+            try{
+                xRes = Double.parseDouble(txtXResolution.getText());
+                }catch(NumberFormatException e){
+                    
+                }
         }
         else
         {
@@ -499,11 +903,11 @@ public class GUI extends JFrame {
       {
           if (radGenerateJuliaSet.isSelected())
           {
-              desiredSet = FractalGenerator.generateJuliaSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, juliaSetValue, exponent);
+              desiredSet = FractalGenerator.generateJuliaSetReturningInts(maxX, minX, maxY, minY, xRes, yRes, maxIterations, juliaSetValue, exponent);
           }
           else if (radGenerateMandelbrotSet.isSelected())
           {
-              desiredSet = FractalGenerator.generateMandelBrotSet(maxX, minX, maxY, minY, xRes, yRes, maxIterations, exponent);
+              desiredSet = FractalGenerator.generateMandelBrotSetReturningInts(maxX, minX, maxY, minY, xRes, yRes, maxIterations, exponent);
           }
           else
           {
@@ -539,5 +943,15 @@ public class GUI extends JFrame {
       this.ourRefresh();
       this.repaint();
       doNotDraw = false;
+    }
+    protected void do_textField_keyTyped(KeyEvent arg0) 
+    {
+        
+    }
+    protected void do_this_mouseClicked(MouseEvent arg0) 
+    {
+        this.getContentPane().setFocusable(true);
+        this.requestFocus();
+        System.out.println("Focus Switched!!");
     }
 }
