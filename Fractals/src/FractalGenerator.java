@@ -1,12 +1,9 @@
 
 public abstract class FractalGenerator 
 {
-    //Testing to see if its working
-    // did you git this?
-	// I got it
-    
     protected static int maxIterations = 100;
     protected static long progress = 0;
+    protected static int displayedProgress = 0;
     
     public static Point[][] generateMandelBrotSet(double maxX, double minX, double maxY, double minY, double xRes, double yRes, int maxIterationsi)
     {
@@ -44,7 +41,6 @@ public abstract class FractalGenerator
                 z = new Complex(0,0);
                 progress++;
                 System.out.println((progress*100/ ((int)(1+((maxY-minY) / yRes)) * (int)(1+((maxX-minX) / xRes)))));
-
             }
             x = x + xRes;
             col++;
@@ -149,6 +145,7 @@ public abstract class FractalGenerator
                 z = new Complex(0,0);
                 progress++;
                 System.out.println((progress*100/ ((int)(1+((maxY-minY) / yRes)) * (int)(1+((maxX-minX) / xRes)))));
+                displayedProgress = (int)(progress*100/ ((int)(1+((maxY-minY) / yRes)) * (int)(1+((maxX-minX) / xRes))));
             }
             x = x + xRes;
             col++;
