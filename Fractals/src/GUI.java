@@ -122,7 +122,7 @@ public class GUI extends JFrame {
         });
         setFocusable(true);
         setFocusTraversalKeysEnabled(false);
-    	setIconImage(Toolkit.getDefaultToolkit().getImage(GUI.class.getResource("/resources/Close Up At One Of The Bulbs.png")));
+    	setIconImage(Toolkit.getDefaultToolkit().getImage(GUI.class.getResource("/resources/Really Cool Small Mandelbrot Set (2).png")));
         setTitle("Fractals");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 1000, 600);
@@ -556,7 +556,15 @@ public class GUI extends JFrame {
                 }
                 else if (e.getKeyCode() == KeyEvent.VK_Z)
                 {
-                    int[][] tempSet = new int[desiredSet.length-2][desiredSet[0].length-2];
+                    int[][] tempSet = null;
+                    try
+                    {
+                        tempSet = new int[desiredSet.length-2][desiredSet[0].length-2];
+                    }
+                    catch(java.lang.NegativeArraySizeException f)
+                    {
+                        return;
+                    }
                     int col = 1;
                     int row = 1;
                     while (col < desiredSet[0].length-1)
@@ -569,7 +577,14 @@ public class GUI extends JFrame {
                         row = 1;
                         col++;
                     }
-                    
+                    if (maxX - xRes > maxX)
+                    {
+                        System.out.println("This is when we've gone too deep for maxX");
+                    }
+                    if (minX - xRes > minX)
+                    {
+                        System.out.println("This is when we've gone too deep for minX");
+                    }
                     maxX = maxX - xRes;
                     minX = minX + xRes;
                     int f = 1;
@@ -627,9 +642,16 @@ public class GUI extends JFrame {
                     }
                     int i = 0;
                     moved = true;
-                    while (i < newSet.length)
+                    while (i < newSet.length-1)
                     {
-                        newSet[i][0] = tempSet[i][1];
+                        try
+                        {
+                            newSet[i][0] = tempSet[i][1];
+                        }
+                        catch(java.lang.ArrayIndexOutOfBoundsException t)
+                        {
+                            newSet[i][0] = tempSet[i][0];
+                        }
                         i++;
                     }
                     
@@ -644,9 +666,16 @@ public class GUI extends JFrame {
                         tempSet = FractalGenerator.generateJuliaSetReturningInts(maxX + xRes, minX - xRes, minY, minY-yRes, xRes, yRes, maxIterations, juliaSetValue, exponent);
                     }
                     i = 0;
-                    while (i < newSet.length)
+                    while (i < newSet.length-1)
                     {
-                        newSet[i][newSet[0].length-1] = tempSet[i][1];
+                        try
+                        {
+                            newSet[i][newSet[0].length-1] = tempSet[i][1];
+                        }
+                        catch(java.lang.ArrayIndexOutOfBoundsException t)
+                        {
+                            newSet[i][newSet[0].length-1] = tempSet[i][0];
+                        }
                         i++;
                     }
                     
@@ -706,6 +735,21 @@ public class GUI extends JFrame {
                     
                     desiredSet = newSet;
                 }
+                else if(e.getKeyCode() == KeyEvent.VK_C)
+                {
+                    xRes = xRes / 10;
+                    yRes = yRes / 10;
+                    txtXResolution.setText(xRes + "");
+                    txtYResolution.setText(yRes + "");
+                    if (radGenerateMandelbrotSet.isSelected())
+                    {
+                        desiredSet = FractalGenerator.generateMandelBrotSetReturningInts(maxX, minX, maxY, minY, xRes, yRes, maxIterations, exponent);
+                    }
+                    else if (radGenerateJuliaSet.isSelected())
+                    {
+                        desiredSet = FractalGenerator.generateJuliaSetReturningInts(maxX, minX, maxY, minY, xRes, yRes, maxIterations, juliaSetValue, exponent);
+                    }
+                }
             }
             
             public void keyReleased(KeyEvent e) 
@@ -764,8 +808,9 @@ public class GUI extends JFrame {
                     {
                         //This code removes the red patches but it causes more problems than it solves, specifically
                         //with the Julia sets where 0 iterations can happen. Try 0.628 and 0.777 as julia set values
-                        //with this code on if you want to see the problem
-                        /*if (desiredSet[y][x] == 0)
+                        //with all sets enabled on if you want to see the problem, for the time being only Mandelbrot sets
+                        //will recieve this treatment because they never should show up red.
+                        if ((desiredSet[y][x] == 0) && (radGenerateMandelbrotSet.isSelected()))
                         {
                             if (y < desiredSet.length-1)
                             {
@@ -783,7 +828,7 @@ public class GUI extends JFrame {
                             {
                                 desiredSet[y][x] = desiredSet[y][x-1];
                             }
-                        }*/
+                        }
                         if (desiredSet[y][x] == FractalGenerator.maxIterations)
                         {
                             g.setColor(Color.BLACK);
@@ -885,7 +930,7 @@ public class GUI extends JFrame {
                 sumOfIncrements = sumOfIncrements - increment;
             }
         }
-        else if (radRandomColours.isEnabled() == false)
+        else if (radRandomColours.isSelected() == false)
         {
             colourList = new Color[]{Color.RED,Color.ORANGE,Color.YELLOW,Color.GREEN,Color.CYAN,Color.BLUE,Color.MAGENTA,Color.PINK,new Color(112,39,195)};
         }
@@ -982,7 +1027,11 @@ public class GUI extends JFrame {
         }
         if (txtYResolution.getText().equals("") == false)
         {
-            yRes = Double.parseDouble(txtYResolution.getText());
+            try
+            {
+                yRes = Double.parseDouble(txtYResolution.getText());
+            }
+            catch(NumberFormatException e){}
         }
         else
         {
@@ -1006,7 +1055,14 @@ public class GUI extends JFrame {
         }
         if (txtMaxIterations.getText().equals("") == false)
         {
-            maxIterations = Integer.parseInt(txtMaxIterations.getText());
+            try
+            {
+                maxIterations = Integer.parseInt(txtMaxIterations.getText());
+            }
+            catch(java.lang.NumberFormatException e)
+            {
+                
+            }
         }
         else
         {
